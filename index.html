@@ -1,356 +1,438 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Escala Louvor</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escala Louvor - Premium</title>
 
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-<style>
-:root{
-  --bg:#020617;
-  --card:#1e293b;
-  --primary:#22c55e;
-  --secondary:#334155;
-  --gold:#facc15;
-  --text:#e5e7eb;
-  --danger:#f87171;
-}
+    <style>
+        /* Sistema de Cores e Temas */
+        :root[data-theme="dark"] {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --primary: #22c55e;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent: #38bdf8;
+            --danger: #ef4444;
+            --border: #334155;
+            --input-bg: #0f172a;
+        }
 
-*{box-sizing:border-box}
+        :root[data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --primary: #16a34a;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --accent: #0284c7;
+            --danger: #dc2626;
+            --border: #e2e8f0;
+            --input-bg: #f8fafc;
+        }
 
-body{
-  margin:0;
-  font-family:Segoe UI, Arial, sans-serif;
-  background:linear-gradient(135deg,#020617,#1e293b);
-  color:var(--text);
-}
+        * {
+            box-sizing: border-box;
+            transition: background 0.25s ease, color 0.2s ease, border-color 0.2s ease;
+        }
 
-#app{
-  max-width:420px;
-  margin:auto;
-  padding:20px;
-  min-height:100vh;
-}
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+        }
 
-header{
-  text-align:center;
-  font-size:22px;
-  font-weight:bold;
-  margin-bottom:20px;
-}
+        #app {
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+            min-height: 100vh;
+            position: relative;
+        }
 
-button{
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:12px;
-  font-weight:bold;
-  cursor:pointer;
-  margin-bottom:10px;
-}
+        /* Header e Controles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
 
-.btn-primary{background:var(--primary);color:#000}
-.btn-secondary{background:var(--secondary);color:#fff}
-.btn-danger{background:var(--danger);color:#000}
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
 
-.card{
-  background:var(--card);
-  border-radius:14px;
-  padding:14px;
-  margin-bottom:14px;
-  border:2px solid transparent;
-}
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
 
-.card.selected{
-  border-color:var(--primary);
-  box-shadow:0 0 8px var(--primary);
-}
+        /* Botões */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 12px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
 
-.card h4{
-  margin:0 0 6px;
-  color:var(--gold);
-}
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); }
+        .btn-danger { background: var(--danger); color: white; }
 
-.info{font-size:12px;margin-bottom:3px}
-.info span{color:#7dd3fc}
+        /* Cards de Escala */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 16px;
+            border: 2px solid transparent;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            position: relative;
+        }
 
-.actions{
-  display:flex;
-  gap:10px;
-  margin-top:8px;
-}
+        .card.selected {
+            border-color: var(--primary);
+            background: var(--bg-card);
+        }
 
-.actions span{
-  font-size:11px;
-  cursor:pointer;
-}
+        .card h4 {
+            margin: 0 0 10px;
+            color: var(--primary);
+            font-size: 18px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+        }
 
-.edit{color:#a5f3fc}
-.delete{color:#f87171}
-.restore{color:#22c55e}
+        .info {
+            font-size: 13px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
 
-#btnPrint{
-  position:fixed;
-  bottom:20px;
-  left:5%;
-  width:90%;
-  display:none;
-  z-index:200;
-}
+        .info b { color: var(--text-sub); font-weight: 500; }
+        .info span { color: var(--text-main); font-weight: 600; }
 
-#form{
-  position:fixed;
-  inset:0;
-  background:#020617;
-  padding:20px;
-  display:none;
-  overflow:auto;
-}
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dotted var(--border);
+        }
 
-input{
-  width:100%;
-  padding:12px;
-  margin-bottom:8px;
-  border-radius:10px;
-  border:none;
-}
+        .actions span { font-size: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .edit { color: var(--accent); }
+        .delete { color: var(--danger); }
+        .restore { color: var(--primary); }
 
-#printArea{
-  display:flex;
-  gap:12px;
-  padding:12px;
-  background:white;
-  position:absolute;
-  left:-9999px;
-  top:0;
-  align-items:flex-start;
-}
+        /* Formulário Modal */
+        #form {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-body);
+            padding: 20px;
+            display: none;
+            overflow-y: auto;
+            z-index: 1000;
+        }
 
-#printArea .card{
-  width:220px;
-  min-height:320px;
-  font-size:11px;
-  color:#000;
-}
+        .form-grid {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
 
-</style>
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text-main);
+            outline: none;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        /* Área de Impressão (Invisível) */
+        #printArea {
+            position: absolute;
+            left: -9999px;
+            display: flex;
+            gap: 15px;
+            padding: 40px;
+            background: white; /* Sempre fundo branco na foto */
+        }
+
+        #printArea .card {
+            width: 250px;
+            color: #1e293b !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0;
+            box-shadow: none;
+        }
+
+        #printArea h4 { color: #16a34a; border-bottom: 1px solid #e2e8f0; }
+        #printArea .info b { color: #64748b; }
+        #printArea .info span { color: #1e293b; }
+
+        /* Botão Flutuante de Imagem */
+        #btnPrint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            display: none;
+            z-index: 500;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+        }
+    </style>
 </head>
 
 <body>
 
 <div id="app">
-  <header>🎶 Escala Louvor</header>
+    <header>
+        <div class="logo">🎶 Escala</div>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Modo Escuro</button>
+    </header>
 
-  <button class="btn-primary" onclick="abrirForm()">➕ Nova Escala</button>
-  <button class="btn-secondary" onclick="ativarSelecao()">🖼️ Gerar Imagem</button>
-  <button class="btn-danger" onclick="mostrarLixeira()">🗑️ Lixeira</button>
+    <button class="btn btn-primary" onclick="abrirForm()">➕ Nova Escala</button>
+    <button class="btn btn-secondary" onclick="ativarSelecao()">🖼️ Gerar Imagem</button>
+    <button class="btn btn-danger" onclick="mostrarLixeira()">🗑️ Lixeira</button>
 
-  <h3 id="status">Escalas Salvas</h3>
-  <div id="lista"></div>
+    <h3 id="statusTitle" style="margin-top: 30px;">Escalas Salvas</h3>
+    <div id="lista"></div>
 </div>
 
-<button id="btnPrint" class="btn-primary" onclick="gerarImagem()">SALVAR IMAGEM (0/5)</button>
+<button id="btnPrint" class="btn btn-primary" onclick="gerarImagem()">
+    CONCLUIR E SALVAR (0/5)
+</button>
 
 <div id="form">
-  <h2 id="formTitle">Cadastrar Escala</h2>
-
-  <input id="dia" placeholder="Data">
-  <input id="ministro" placeholder="Ministro">
-  <input id="vocal" placeholder="Vocal">
-  <input id="guitarra" placeholder="Guitarra">
-  <input id="violao" placeholder="Violão">
-  <input id="baixo" placeholder="Baixo">
-  <input id="teclado" placeholder="Teclado">
-  <input id="bateria" placeholder="Bateria">
-  <input id="som" placeholder="Som / Painel">
-
-  <button class="btn-primary" onclick="salvar()">Salvar</button>
-  <button class="btn-secondary" onclick="fecharForm()">Voltar</button>
+    <h2 id="formTitle">Cadastrar Escala</h2>
+    <div class="form-grid">
+        <input id="dia" placeholder="Data (ex: Domingo 25/08)">
+        <input id="ministro" placeholder="Ministro de Louvor">
+        <input id="vocal" placeholder="Vocal">
+        <input id="guitarra" placeholder="Guitarra">
+        <input id="violao" placeholder="Violão">
+        <input id="baixo" placeholder="Baixo">
+        <input id="teclado" placeholder="Teclado">
+        <input id="bateria" placeholder="Bateria">
+        <input id="som" placeholder="Som / Projeção">
+    </div>
+    <button class="btn btn-primary" onclick="salvar()">Salvar Escala</button>
+    <button class="btn btn-secondary" onclick="fecharForm()">Cancelar</button>
 </div>
 
 <div id="printArea"></div>
 
 <script>
-let escalas = JSON.parse(localStorage.getItem('escalas')) || [];
-let lixeira = JSON.parse(localStorage.getItem('lixeira')) || [];
-let selecionados = [];
-let modoSelecao = false;
-let editIndex = null;
-let mostrandoLixeira = false;
+    let escalas = JSON.parse(localStorage.getItem('escalas')) || [];
+    let lixeira = JSON.parse(localStorage.getItem('lixeira')) || [];
+    let selecionados = [];
+    let modoSelecao = false;
+    let editIndex = null;
+    let mostrandoLixeira = false;
 
-const lista = document.getElementById('lista');
-const btnPrint = document.getElementById('btnPrint');
-const statusText = document.getElementById('status');
+    // --- Gestão de Temas ---
+    function toggleTheme() {
+        const html = document.documentElement;
+        const current = html.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        updateThemeUI(next);
+    }
 
-function salvarStorage(){
-  localStorage.setItem('escalas',JSON.stringify(escalas));
-  localStorage.setItem('lixeira',JSON.stringify(lixeira));
-}
+    function updateThemeUI(theme) {
+        const btn = document.getElementById('themeBtn');
+        btn.innerText = theme === 'dark' ? '🌙 Modo Escuro' : '☀️ Modo Claro';
+    }
 
-function render(){
-  lista.innerHTML='';
-  const data = mostrandoLixeira ? lixeira : escalas;
+    // Inicializar Tema
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeUI(savedTheme);
 
-  data.forEach((e,i)=>{
-    const card=document.createElement('div');
-    card.className='card'+(selecionados.includes(i)?' selected':'');
-    card.onclick=()=>toggle(i);
+    // --- Lógica Principal ---
+    function salvarStorage() {
+        localStorage.setItem('escalas', JSON.stringify(escalas));
+        localStorage.setItem('lixeira', JSON.stringify(lixeira));
+    }
 
-    card.innerHTML=`
-      <h4>${e.dia}</h4>
-      <div class="info">Ministro: <span>${e.ministro}</span></div>
-      <div class="info">Vocal: <span>${e.vocal}</span></div>
-      <div class="info">Guitarra: <span>${e.guitarra}</span></div>
-      <div class="info">Violão: <span>${e.violao}</span></div>
-      <div class="info">Baixo: <span>${e.baixo}</span></div>
-      <div class="info">Teclado: <span>${e.teclado}</span></div>
-      <div class="info">Bateria: <span>${e.bateria}</span></div>
-      <div class="info">Som: <span>${e.som}</span></div>
+    function render() {
+        const lista = document.getElementById('lista');
+        lista.innerHTML = '';
+        const data = mostrandoLixeira ? lixeira : escalas;
 
-      <div class="actions">
-        ${!mostrandoLixeira?`
-          <span class="edit" onclick="event.stopPropagation();editar(${i})">Editar</span>
-          <span class="delete" onclick="event.stopPropagation();excluir(${i})">Excluir</span>
-        `:`
-          <span class="restore" onclick="event.stopPropagation();restaurar(${i})">Restaurar</span>
-        `}
-      </div>
-    `;
-    lista.appendChild(card);
-  });
-}
+        if(data.length === 0) {
+            lista.innerHTML = <p style="text-align:center; color:var(--text-sub); margin-top:20px;">Nenhum registro encontrado.</p>;
+        }
 
-function abrirForm(){
-  document.getElementById('form').style.display='block';
-}
+        data.forEach((e, i) => {
+            const card = document.createElement('div');
+            card.className = 'card' + (selecionados.includes(i) ? ' selected' : '');
+            card.onclick = () => toggleSelecao(i);
 
-function fecharForm(){
-  document.getElementById('form').style.display='none';
-  editIndex=null;
-}
+            card.innerHTML = `
+                <h4>${e.dia}</h4>
+                <div class="info"><b>Ministro</b> <span>${e.ministro}</span></div>
+                <div class="info"><b>Vocal</b> <span>${e.vocal}</span></div>
+                <div class="info"><b>Guitarra</b> <span>${e.guitarra}</span></div>
+                <div class="info"><b>Violão</b> <span>${e.violao}</span></div>
+                <div class="info"><b>Baixo</b> <span>${e.baixo}</span></div>
+                <div class="info"><b>Teclado</b> <span>${e.teclado}</span></div>
+                <div class="info"><b>Bateria</b> <span>${e.bateria}</span></div>
+                <div class="info"><b>Som</b> <span>${e.som}</span></div>
+                <div class="actions">
+                    ${!mostrandoLixeira ? `
+                        <span class="edit" onclick="event.stopPropagation();editar(${i})">Editar</span>
+                        <span class="delete" onclick="event.stopPropagation();excluir(${i})">Excluir</span>
+                    ` : `
+                        <span class="restore" onclick="event.stopPropagation();restaurar(${i})">Restaurar</span>
+                    `}
+                </div>
+            `;
+            lista.appendChild(card);
+        });
+    }
 
-function salvar(){
-  const obj={
-    dia:dia.value,ministro:ministro.value,vocal:vocal.value,
-    guitarra:guitarra.value,violao:violao.value,
-    baixo:baixo.value,teclado:teclado.value,
-    bateria:bateria.value,som:som.value
-  };
+    function abrirForm() {
+        document.getElementById('form').style.display = 'block';
+        if (editIndex === null) {
+            document.querySelectorAll('#form input').forEach(input => input.value = '');
+        }
+    }
 
-  if(editIndex!==null){
-    escalas[editIndex]=obj;
-  }else{
-    escalas.push(obj);
-  }
+    function fecharForm() {
+        document.getElementById('form').style.display = 'none';
+        editIndex = null;
+    }
 
-  salvarStorage();
-  fecharForm();
-  render();
-}
+    function salvar() {
+        const campos = ['dia', 'ministro', 'vocal', 'guitarra', 'violao', 'baixo', 'teclado', 'bateria', 'som'];
+        const obj = {};
+        campos.forEach(c => obj[c] = document.getElementById(c).value || '-');
 
-function editar(i){
-  const e=escalas[i];
-  editIndex=i;
-  dia.value=e.dia;
-  ministro.value=e.ministro;
-  vocal.value=e.vocal;
-  guitarra.value=e.guitarra;
-  violao.value=e.violao;
-  baixo.value=e.baixo;
-  teclado.value=e.teclado;
-  bateria.value=e.bateria;
-  som.value=e.som;
-  abrirForm();
-}
+        if (editIndex !== null) escalas[editIndex] = obj;
+        else escalas.push(obj);
 
-function excluir(i){
-  lixeira.push(escalas[i]);
-  escalas.splice(i,1);
-  salvarStorage();
-  render();
-}
+        salvarStorage();
+        fecharForm();
+        render();
+    }
 
-function restaurar(i){
-  escalas.push(lixeira[i]);
-  lixeira.splice(i,1);
-  salvarStorage();
-  render();
-}
+    function editar(i) {
+        editIndex = i;
+        const e = escalas[i];
+        const campos = ['dia', 'ministro', 'vocal', 'guitarra', 'violao', 'baixo', 'teclado', 'bateria', 'som'];
+        campos.forEach(c => document.getElementById(c).value = e[c]);
+        abrirForm();
+    }
 
-function mostrarLixeira(){
-  mostrandoLixeira=!mostrandoLixeira;
-  statusText.innerText=mostrandoLixeira?'Lixeira':'Escalas Salvas';
-  render();
-}
+    function excluir(i) {
+        lixeira.push(escalas[i]);
+        escalas.splice(i, 1);
+        salvarStorage();
+        render();
+    }
 
-function ativarSelecao(){
-  modoSelecao=true;
-  selecionados=[];
-  btnPrint.style.display='block';
-  btnPrint.innerText='SALVAR IMAGEM (0/5)';
-}
+    function restaurar(i) {
+        escalas.push(lixeira[i]);
+        lixeira.splice(i, 1);
+        salvarStorage();
+        render();
+    }
 
-function toggle(i){
-  if(!modoSelecao)return;
-  if(selecionados.includes(i))
-    selecionados=selecionados.filter(x=>x!==i);
-  else if(selecionados.length<5)
-    selecionados.push(i);
-  btnPrint.innerText=`SALVAR IMAGEM (${selecionados.length}/5)`;
-  render();
-}
+    function mostrarLixeira() {
+        mostrandoLixeira = !mostrandoLixeira;
+        document.getElementById('statusTitle').innerText = mostrandoLixeira ? 'Lixeira' : 'Escalas Salvas';
+        render();
+    }
 
-async function gerarImagem(){
-  if(selecionados.length === 0){
-    alert('Selecione ao menos uma escala');
-    return;
-  }
+    // --- Lógica de Imagem ---
+    function ativarSelecao() {
+        if(mostrandoLixeira) mostrarLixeira();
+        modoSelecao = true;
+        selecionados = [];
+        document.getElementById('btnPrint').style.display = 'block';
+        document.getElementById('btnPrint').innerText = 'CONCLUIR E SALVAR (0/5)';
+        render();
+    }
 
-  const area = document.getElementById('printArea');
-  area.innerHTML = '';
+    function toggleSelecao(i) {
+        if (!modoSelecao) return;
+        const index = selecionados.indexOf(i);
+        if (index > -1) selecionados.splice(index, 1);
+        else if (selecionados.length < 5) selecionados.push(i);
+        
+        document.getElementById('btnPrint').innerText = CONCLUIR E SALVAR (${selecionados.length}/5);
+        render();
+    }
 
-  // Clona os cards selecionados
-  selecionados.forEach(i=>{
-    const clone = document.querySelectorAll('.card')[i].cloneNode(true);
-    clone.classList.remove('selected');
-    area.appendChild(clone);
-  });
+    async function gerarImagem() {
+        if (selecionados.length === 0) return alert('Selecione ao menos 1 card!');
 
-  // Calcula largura dinâmica
-  const cardWidth = 220;
-  const gap = 12;
-  const padding = 24;
+        const area = document.getElementById('printArea');
+        area.innerHTML = '';
 
-  const larguraTotal =
-    (selecionados.length * cardWidth) +
-    ((selecionados.length - 1) * gap) +
-    padding;
+        // Pegamos os cards originais para clonar
+        const cardsExistentes = document.querySelectorAll('#lista .card');
+        
+        selecionados.forEach(i => {
+            const clone = cardsExistentes[i].cloneNode(true);
+            clone.classList.remove('selected');
+            area.appendChild(clone);
+        });
 
-  area.style.width = larguraTotal + 'px';
+        // Pequeno delay para garantir renderização do DOM
+        await new Promise(r => setTimeout(r, 400));
 
-  await new Promise(r => setTimeout(r, 300));
+        html2canvas(area, {
+            scale: 2,
+            backgroundColor: '#ffffff'
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = Escala-Louvor-${Date.now()}.png;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
 
-  html2canvas(area,{
-    scale:2,
-    backgroundColor:'#ffffff'
-  }).then(canvas=>{
-    const link = document.createElement('a');
-    link.download = `escala-${selecionados.length}-cards.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  });
+            // Reset
+            modoSelecao = false;
+            selecionados = [];
+            document.getElementById('btnPrint').style.display = 'none';
+            render();
+        });
+    }
 
-  // Reset
-  modoSelecao = false;
-  selecionados = [];
-  btnPrint.style.display = 'none';
-  render();
-}
-
-
-render();
+    render();
 </script>
 
 </body>
