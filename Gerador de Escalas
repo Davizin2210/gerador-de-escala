@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escala Louvor</title>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<style>
+:root{
+  --bg:#020617;
+  --card:#1e293b;
+  --primary:#22c55e;
+  --secondary:#334155;
+  --gold:#facc15;
+  --text:#e5e7eb;
+  --danger:#f87171;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Segoe UI, Arial, sans-serif;
+  background:linear-gradient(135deg,#020617,#1e293b);
+  color:var(--text);
+}
+
+#app{
+  max-width:420px;
+  margin:auto;
+  padding:20px;
+  min-height:100vh;
+}
+
+header{
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
+  margin-bottom:20px;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  font-weight:bold;
+  cursor:pointer;
+  margin-bottom:10px;
+}
+
+.btn-primary{background:var(--primary);color:#000}
+.btn-secondary{background:var(--secondary);color:#fff}
+.btn-danger{background:var(--danger);color:#000}
+
+.card{
+  background:var(--card);
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:14px;
+  border:2px solid transparent;
+}
+
+.card.selected{
+  border-color:var(--primary);
+  box-shadow:0 0 8px var(--primary);
+}
+
+.card h4{
+  margin:0 0 6px;
+  color:var(--gold);
+}
+
+.info{font-size:12px;margin-bottom:3px}
+.info span{color:#7dd3fc}
+
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:8px;
+}
+
+.actions span{
+  font-size:11px;
+  cursor:pointer;
+}
+
+.edit{color:#a5f3fc}
+.delete{color:#f87171}
+.restore{color:#22c55e}
+
+#btnPrint{
+  position:fixed;
+  bottom:20px;
+  left:5%;
+  width:90%;
+  display:none;
+  z-index:200;
+}
+
+#form{
+  position:fixed;
+  inset:0;
+  background:#020617;
+  padding:20px;
+  display:none;
+  overflow:auto;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:8px;
+  border-radius:10px;
+  border:none;
+}
+
+#printArea{
+  display:flex;
+  gap:12px;
+  padding:12px;
+  background:white;
+  position:absolute;
+  left:-9999px;
+  top:0;
+  align-items:flex-start;
+}
+
+#printArea .card{
+  width:220px;
+  min-height:320px;
+  font-size:11px;
+  color:#000;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="app">
+  <header>🎶 Escala Louvor</header>
+
+  <button class="btn-primary" onclick="abrirForm()">➕ Nova Escala</button>
+  <button class="btn-secondary" onclick="ativarSelecao()">🖼️ Gerar Imagem</button>
+  <button class="btn-danger" onclick="mostrarLixeira()">🗑️ Lixeira</button>
+
+  <h3 id="status">Escalas Salvas</h3>
+  <div id="lista"></div>
+</div>
+
+<button id="btnPrint" class="btn-primary" onclick="gerarImagem()">SALVAR IMAGEM (0/5)</button>
+
+<div id="form">
+  <h2 id="formTitle">Cadastrar Escala</h2>
+
+  <input id="dia" placeholder="Data">
+  <input id="ministro" placeholder="Ministro">
+  <input id="vocal" placeholder="Vocal">
+  <input id="guitarra" placeholder="Guitarra">
+  <input id="violao" placeholder="Violão">
+  <input id="baixo" placeholder="Baixo">
+  <input id="teclado" placeholder="Teclado">
+  <input id="bateria" placeholder="Bateria">
+  <input id="som" placeholder="Som / Painel">
+
+  <button class="btn-primary" onclick="salvar()">Salvar</button>
+  <button class="btn-secondary" onclick="fecharForm()">Voltar</button>
+</div>
+
+<div id="printArea"></div>
+
+<script>
+let escalas = JSON.parse(localStorage.getItem('escalas')) || [];
+let lixeira = JSON.parse(localStorage.getItem('lixeira')) || [];
+let selecionados = [];
+let modoSelecao = false;
+let editIndex = null;
+let mostrandoLixeira = false;
+
+const lista = document.getElementById('lista');
+const btnPrint = document.getElementById('btnPrint');
+const statusText = document.getElementById('status');
+
+function salvarStorage(){
+  localStorage.setItem('escalas',JSON.stringify(escalas));
+  localStorage.setItem('lixeira',JSON.stringify(lixeira));
+}
+
+function render(){
+  lista.innerHTML='';
+  const data = mostrandoLixeira ? lixeira : escalas;
+
+  data.forEach((e,i)=>{
+    const card=document.createElement('div');
+    card.className='card'+(selecionados.includes(i)?' selected':'');
+    card.onclick=()=>toggle(i);
+
+    card.innerHTML=`
+      <h4>${e.dia}</h4>
+      <div class="info">Ministro: <span>${e.ministro}</span></div>
+      <div class="info">Vocal: <span>${e.vocal}</span></div>
+      <div class="info">Guitarra: <span>${e.guitarra}</span></div>
+      <div class="info">Violão: <span>${e.violao}</span></div>
+      <div class="info">Baixo: <span>${e.baixo}</span></div>
+      <div class="info">Teclado: <span>${e.teclado}</span></div>
+      <div class="info">Bateria: <span>${e.bateria}</span></div>
+      <div class="info">Som: <span>${e.som}</span></div>
+
+      <div class="actions">
+        ${!mostrandoLixeira?`
+          <span class="edit" onclick="event.stopPropagation();editar(${i})">Editar</span>
+          <span class="delete" onclick="event.stopPropagation();excluir(${i})">Excluir</span>
+        `:`
+          <span class="restore" onclick="event.stopPropagation();restaurar(${i})">Restaurar</span>
+        `}
+      </div>
+    `;
+    lista.appendChild(card);
+  });
+}
+
+function abrirForm(){
+  document.getElementById('form').style.display='block';
+}
+
+function fecharForm(){
+  document.getElementById('form').style.display='none';
+  editIndex=null;
+}
+
+function salvar(){
+  const obj={
+    dia:dia.value,ministro:ministro.value,vocal:vocal.value,
+    guitarra:guitarra.value,violao:violao.value,
+    baixo:baixo.value,teclado:teclado.value,
+    bateria:bateria.value,som:som.value
+  };
+
+  if(editIndex!==null){
+    escalas[editIndex]=obj;
+  }else{
+    escalas.push(obj);
+  }
+
+  salvarStorage();
+  fecharForm();
+  render();
+}
+
+function editar(i){
+  const e=escalas[i];
+  editIndex=i;
+  dia.value=e.dia;
+  ministro.value=e.ministro;
+  vocal.value=e.vocal;
+  guitarra.value=e.guitarra;
+  violao.value=e.violao;
+  baixo.value=e.baixo;
+  teclado.value=e.teclado;
+  bateria.value=e.bateria;
+  som.value=e.som;
+  abrirForm();
+}
+
+function excluir(i){
+  lixeira.push(escalas[i]);
+  escalas.splice(i,1);
+  salvarStorage();
+  render();
+}
+
+function restaurar(i){
+  escalas.push(lixeira[i]);
+  lixeira.splice(i,1);
+  salvarStorage();
+  render();
+}
+
+function mostrarLixeira(){
+  mostrandoLixeira=!mostrandoLixeira;
+  statusText.innerText=mostrandoLixeira?'Lixeira':'Escalas Salvas';
+  render();
+}
+
+function ativarSelecao(){
+  modoSelecao=true;
+  selecionados=[];
+  btnPrint.style.display='block';
+  btnPrint.innerText='SALVAR IMAGEM (0/5)';
+}
+
+function toggle(i){
+  if(!modoSelecao)return;
+  if(selecionados.includes(i))
+    selecionados=selecionados.filter(x=>x!==i);
+  else if(selecionados.length<5)
+    selecionados.push(i);
+  btnPrint.innerText=`SALVAR IMAGEM (${selecionados.length}/5)`;
+  render();
+}
+
+async function gerarImagem(){
+  if(selecionados.length === 0){
+    alert('Selecione ao menos uma escala');
+    return;
+  }
+
+  const area = document.getElementById('printArea');
+  area.innerHTML = '';
+
+  // Clona os cards selecionados
+  selecionados.forEach(i=>{
+    const clone = document.querySelectorAll('.card')[i].cloneNode(true);
+    clone.classList.remove('selected');
+    area.appendChild(clone);
+  });
+
+  // Calcula largura dinâmica
+  const cardWidth = 220;
+  const gap = 12;
+  const padding = 24;
+
+  const larguraTotal =
+    (selecionados.length * cardWidth) +
+    ((selecionados.length - 1) * gap) +
+    padding;
+
+  area.style.width = larguraTotal + 'px';
+
+  await new Promise(r => setTimeout(r, 300));
+
+  html2canvas(area,{
+    scale:2,
+    backgroundColor:'#ffffff'
+  }).then(canvas=>{
+    const link = document.createElement('a');
+    link.download = `escala-${selecionados.length}-cards.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+
+  // Reset
+  modoSelecao = false;
+  selecionados = [];
+  btnPrint.style.display = 'none';
+  render();
+}
+
+
+render();
+</script>
+
+</body>
+</html>
